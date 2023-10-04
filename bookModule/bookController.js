@@ -119,7 +119,9 @@ export function save() {
 
   cargarLibro(inputFile)
     .then((base64String) => {
-      idBook === "" ? (method = "POST") : ((method = "PUT"), (book.id_book = idBook));
+      idBook === ""
+        ? (method = "POST")
+        : ((method = "PUT"), (book.id_book = idBook));
 
       book.file = base64String;
       sendData(book, method).then((book) => {
@@ -149,18 +151,16 @@ function loadTable(books) {
         <td class="text-center"><span class="badge bg-success">${
           book.status ? book.status : "Activo"
         }</span></td>
-        <td>        
-          <button class="btn btn-sm btn-danger fa-solid fa-trash-can" onclick="bookModule.deleteBook(${idx})"></button>
+        <td>  
+          <button class="btn btn-sm btn-primary fa-regular fa-eye" onclick="bookModule.seeBook1(${idx})"></button>                          
           <button class="btn btn-sm btn-warning fa-solid fa-pen-to-square" onclick="bookModule.editBook(${idx})"></button>
-          <button class="btn btn-sm btn-primary fa-regular fa-eye" onclick="bookModule.seeBook1(${idx})"></button>          
+          <button class="btn btn-sm btn-danger fa-solid fa-trash-can" onclick="bookModule.deleteBook(${idx})"></button>
         </td>            
       `;
 
     bookTable.insertAdjacentHTML("beforeend", newRow.outerHTML);
   });
 }
-
-
 
 export function seeBook1(idx) {
   let libro = booksGlobal[idx];
