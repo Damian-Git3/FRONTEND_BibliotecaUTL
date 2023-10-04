@@ -1,20 +1,18 @@
-body{
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    overflow: hidden;
-    margin: 0;
-    padding: 0;
-    font-family: 'Roboto', sans-serif;    
-    text-align: left;
-    box-sizing: border-box;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  font-family: "Roboto", sans-serif;
+  text-align: left;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .tabla-scroll {
-    overflow: auto;
-    
-    height: 80vh;
-  }
-  
+  overflow: auto;
+  height: 70vh;
+}

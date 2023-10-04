@@ -147,7 +147,7 @@ function loadTable(books) {
         <td>${book.author}</td>
         <td>${book.university}</td>      
         <td class="text-center"><span class="badge bg-success">${
-          book.status ? book.status : ""
+          book.status ? book.status : "Activo"
         }</span></td>
         <td>        
           <button class="btn btn-sm btn-danger fa-solid fa-trash-can" onclick="bookModule.deleteBook(${idx})"></button>
@@ -225,12 +225,12 @@ export function cleanForm() {
   document.getElementById("fileFrm").value = "";
 }
 
-function filterTable() {
+export function filterTable() {
   // Declare variables
   var input, filter, table, tr, td, i, j, txtValue;
   input = document.getElementById("txtSearch");
   filter = input.value.toUpperCase();
-  table = document.getElementById("tableBooks");
+  table = document.getElementById("tbBooks");
   tr = table.getElementsByTagName("tr");
 
   // Loop through all table rows
