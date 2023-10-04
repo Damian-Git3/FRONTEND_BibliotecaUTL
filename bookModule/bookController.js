@@ -15,7 +15,13 @@ async function getData(url) {
   }
 }
 
-async function sendData(url, datos, type) {
+async function sendData(book, type) {
+  let url = "http://localhost:9000/api/book";
+
+  if (type === "PUT") {
+    url += "/" + book.id_book;
+  }
+
   try {
     // Crear un objeto con las opciones de la petición
     let opciones = {
@@ -23,7 +29,7 @@ async function sendData(url, datos, type) {
       headers: {
         "Content-Type": "application/json", // Indicar el tipo de contenido
       },
-      body: JSON.stringify(datos), // Convertir los datos a JSON y enviarlos en el cuerpo de la petición
+      body: JSON.stringify(book), // Convertir los datos a JSON y enviarlos en el cuerpo de la petición
     };
     // Esperar a que se resuelva la petición fetch
     let respuesta = await fetch(url, opciones);
@@ -74,11 +80,11 @@ export function loadModule() {
     books.forEach((element) => {
       booksGlobal.push(element);
     });
-
+    document.getElementById("btnClose").click();
     loadTable(books);
   });
 
-  let url2 = "http://192.168.200.254:8080/api/library/books/getAll";
+  /* let url2 = "http://192.168.200.254:8080/api/library/books/getAll";
 
   getData(url2).then((books) => {
     books.forEach((element) => {
@@ -94,7 +100,7 @@ export function loadModule() {
       booksGlobal.push(element);
     });
     loadTable(books);
-  });
+  }); */
 }
 
 export function save() {
@@ -111,16 +117,27 @@ export function save() {
   book.author = authorBook;
   book.university = universityBook;
 
-  idBook.equals("") ? (method = "POST") : (method = "PUT");
+  cargarLibro(inputFile)
+    .then((base64String) => {
+      idBook === "" ? (method = "POST") : ((method = "PUT"), (book.id_book = idBook));
 
-  sendData("http://localhost:9000/api/book", book, method).then((book) => {
-    cleanForm();
-    loadModule();
-  });
+      book.file = base64String;
+      sendData(book, method).then((book) => {
+        cleanForm();
+        loadModule();
+      });
+
+      //console.log("Cadena Base64 del libro:", base64String);
+      // Puedes hacer algo con la cadena Base64 aquí, como enviarla al servidor o mostrarla en la página.
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+    });
 }
 
 function loadTable(books) {
-  const BOOK_TABLE = document.getElementById("tbBooks");
+  let bookTable = document.getElementById("tbBooks");
+  bookTable.innerHTML = "";
 
   books.forEach((book, idx) => {
     const newRow = document.createElement("tr");
@@ -129,39 +146,29 @@ function loadTable(books) {
         <td>${book.name}</td>
         <td>${book.author}</td>
         <td>${book.university}</td>      
-        <td class="text-center"><span class="badge bg-success">${book.status ? book.status : ""}</span></td>
+        <td class="text-center"><span class="badge bg-success">${
+          book.status ? book.status : ""
+        }</span></td>
         <td>        
           <button class="btn btn-sm btn-danger fa-solid fa-trash-can" onclick="bookModule.deleteBook(${idx})"></button>
           <button class="btn btn-sm btn-warning fa-solid fa-pen-to-square" onclick="bookModule.editBook(${idx})"></button>
-          <button class="btn btn-primary fa-regular fa-eye" onclick="bookModule.seeBook(${idx})"></button>          
+          <button class="btn btn-sm btn-primary fa-regular fa-eye" onclick="bookModule.seeBook1(${idx})"></button>          
         </td>            
       `;
 
-      BOOK_TABLE.appendChild(newRow);
+    bookTable.insertAdjacentHTML("beforeend", newRow.outerHTML);
   });
 }
 
-export function seeBookDani(idBook) {
-  const binaryData = atob(booksGlobal[idBook].file);
 
-  // Crea un Blob a partir de los datos binarios
-  const blob = new Blob(
-    [new Uint8Array(binaryData.length).map((_, i) => binaryData.charCodeAt(i))],
-    {
-      type: "application/pdf",
-    }
-  );
 
-  // Crea una URL del Blob
-  const blobUrl = URL.createObjectURL(blob);
+export function seeBook1(idx) {
+  let libro = booksGlobal[idx];
 
-  // Abre una nueva ventana o pestaña y muestra el PDF
-  window.open(blobUrl, "_blank");
-}
-
-export function seeBookYisus(idx) {
-  let libro = librosExternos[idx];
-
+  if (libro.file === null) {
+    alert("No hay libro");
+    return;
+  }
   // Crear un Blob a partir de la cadena base64
   const binaryPDF = atob(libro.file);
   const arrayBuffer = new ArrayBuffer(binaryPDF.length);
@@ -182,29 +189,32 @@ export function seeBookYisus(idx) {
 }
 
 function cargarLibro(objetoInputFile) {
-  // Revisamos que el usuario haya seleccionado un archivo
-  if (objetoInputFile.files && objetoInputFile.files[0]) {
-    // Ayuda a leer la imagen del input file
-    let reader = new FileReader();
-    // Agregamos un oyente al lector del archivo para que,
-    // en cuento el usuario cargue una imagen, esta se lea
-    // y se convierta de forma autoamrica en una cadena de Base64
-    reader.onload = function (e) {
-      // El contenido del archivo despues de haberlo leido. Son datos binarios
-      let libroB64 = e.target.result;
-      // $("#imgFoto").attr("src", fotoB64);
-      // $("txtBase64").val(fotoB64.substring(22, fotoB64.length));
-      // Se pone el la Base64 de la fotografia
-      // Colocamos la Base64 en el textArea
-      document.getElementById("txtCodigoLibro").value = libroB64.substring(
-        libroB64.indexOf(",") + 1,
-        libroB64.length
-      );
-    };
-    //Leemos el archivo que selecciono el usuario y lo
-    //convertimos en un cadena de Base64
-    return reader.readAsDataURL(objetoInputFile.files[0]);
-  }
+  return new Promise((resolve, reject) => {
+    // Revisamos que el usuario haya seleccionado un archivo
+    if (objetoInputFile.files && objetoInputFile.files[0]) {
+      // Ayuda a leer la imagen del input file
+      let reader = new FileReader();
+
+      // Agregamos un oyente al lector del archivo para que,
+      // en cuanto el usuario cargue una imagen, esta se lea
+      // y se convierta de forma automática en una cadena de Base64
+      reader.onload = function (e) {
+        // El contenido del archivo después de haberlo leído. Son datos binarios
+        let libroB64 = e.target.result;
+
+        // Se pone la Base64 del libro
+        // Resolvemos la promesa con la cadena Base64
+        resolve(libroB64.substring(libroB64.indexOf(",") + 1));
+      };
+
+      // Leemos el archivo que seleccionó el usuario y lo
+      // convertimos en una cadena de Base64
+      reader.readAsDataURL(objetoInputFile.files[0]);
+    } else {
+      // Si no se seleccionó ningún archivo, rechazamos la promesa con un mensaje de error
+      reject(new Error("No se seleccionó ningún archivo"));
+    }
+  });
 }
 
 export function cleanForm() {
@@ -212,6 +222,7 @@ export function cleanForm() {
   document.getElementById("nameFrm").value = "";
   document.getElementById("authorFrm").value = "";
   document.getElementById("universityFrm").value = "";
+  document.getElementById("fileFrm").value = "";
 }
 
 function filterTable() {
@@ -251,11 +262,28 @@ function filterTable() {
   }
 }
 
-function editBook(idx){
-  document.getElementById("idFrm").value = books[idx];
-  document.getElementById("nameFrm").value = books[idx];
-  document.getElementById("authorFrm").value = books[idx];
-  document.getElementById("universityFrm").value = books[idx];
-  
+export function editBook(idx) {
+  document.getElementById("btnForm").click();
+  document.getElementById("idFrm").value = booksGlobal[idx].id_book;
+  document.getElementById("nameFrm").value = booksGlobal[idx].name;
+  document.getElementById("authorFrm").value = booksGlobal[idx].author;
+  document.getElementById("universityFrm").value = booksGlobal[idx].university;
+}
 
+export function seeBook2(idBook) {
+  const binaryData = atob(booksGlobal[idBook].file);
+
+  // Crea un Blob a partir de los datos binarios
+  const blob = new Blob(
+    [new Uint8Array(binaryData.length).map((_, i) => binaryData.charCodeAt(i))],
+    {
+      type: "application/pdf",
+    }
+  );
+
+  // Crea una URL del Blob
+  const blobUrl = URL.createObjectURL(blob);
+
+  // Abre una nueva ventana o pestaña y muestra el PDF
+  window.open(blobUrl, "_blank");
 }
