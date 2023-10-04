@@ -1,8 +1,10 @@
 <div class="col-10">
-    <div class="my-2">
+    <div class="my-2 d-flex flex-row justify-content-between">
         <button id="btnForm" type="button" class="btn btn-sm btn-primary fa-solid fa-plus" data-bs-toggle="modal"
             data-bs-target="#formBook">
         </button>
+
+        <input type="text" name="txtSearch" id="txtSearch" class="form-control form-control-sm w-25" onchange="bookModule.filterTable()">
     </div>
 
     <div class="table-responsive tabla-scroll">
@@ -49,7 +51,7 @@
                             <i class="fa-solid fa-book"></i>
                         </div>
                         <div class="form-floating mb-3 mt-3 w-100">
-                            <input type="number" name="idFrm" id="idFrm" class="form-control form-control-sm"
+                            <input type="number" name="idFrm" id="idFrm" class="form-control form-control-sm d-none"
                                 placeholder="Enter name" />
                             <label for="idFrm">Id</label>
                         </div>
