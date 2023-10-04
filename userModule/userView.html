@@ -1,0 +1,118 @@
+<div class="card ">
+    <div class="card-body">
+        <div class="my-2">
+            <button id="btnNewUser" type="button" class="btn btn-sm btn-primary fa-solid fa-plus" data-bs-toggle="modal" data-bs-target="#formUser">
+            </button>
+        </div>
+
+        <div class="table-responsive-md ">
+            <table class="table table-bordered">
+                <thead class="table-head">
+                    <tr>
+                        <th>USER</th>
+                        <th>MAIL</th>
+                        <th>ROL</th>
+                        <th>STATUS</th>
+                        <th></th>
+
+                    </tr>
+                </thead>
+                <tbody id="tbUsers">
+                    <tr>
+                        <td>Administrador</td>
+                        <td>admin@gmail.com</td>
+                        <td>Administrador</td>
+                        <td class="text-center"><span class="badge bg-success">Activo</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-danger fa-solid fa-trash-can"></button>
+                            <button class="btn btn-sm btn-warning fa-solid fa-pen-to-square"></button>
+
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<div class="modal fade" id="formUser">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h4 class="modal-title">New Users Register</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <!-- Modal body -->
+      <div class="modal-body">
+        <div class="d-flex flex-row align-items-center d-none">
+          <div class="m-3">
+            <i class="fa-solid fa-user"></i>
+          </div>
+          <div class="form-floating mb-3 mt-3 w-100">
+            <input type="text" name="idFrm" id="idFrm" class="form-control form-control-sm" placeholder="Enter user" />
+            <label for="idFrm">Id</label>
+          </div>
+        </div>
+
+        <div class="d-flex flex-row align-items-center">
+          <div class="m-3">
+            <i class="fa-solid fa-user"></i>
+          </div>
+          <div class="form-floating mb-3 mt-3 w-100">
+            <input type="text" name="userFrm" id="userFrm" class="form-control form-control-sm"
+              placeholder="Enter user" />
+            <label for="userFrm">User</label>
+          </div>
+        </div>
+
+        <div class="d-flex flex-row align-items-center">
+          <div class="m-3">
+            <i class="fa-solid fa-envelope"></i>
+          </div>
+          <div class="form-floating mb-3 mt-3 w-100">
+            <input type="text" name="mailFrm" id="mailFrm" class="form-control form-control-sm"
+              placeholder="Enter mail" />
+            <label for="mailFrm">Mail</label>
+          </div>
+        </div>
+
+        <div class="d-flex flex-row align-items-center">
+          <div class="m-3">
+            <i class="fa-solid fa-envelope"></i>
+          </div>
+          <div class="form-floating mb-3 mt-3 w-100">
+            <input type="text" name="rolFrm" id="rolFrm" class="form-control form-control-sm"
+              placeholder="Enter mail" />
+            <label for="rolFrm">Rol</label>
+          </div>
+        </div>
+
+        <div class="d-flex flex-row align-items-center">
+          <div class="m-3">
+            <i class="fa-solid fa-lock"></i>
+          </div>
+          <div class="form-floating mb-3 mt-3 w-100">
+            <input type="text" name="passFrm" id="passFrm" class="form-control form-control-sm"
+              placeholder="Enter user" />
+            <label for="passFrm">Password</label>
+          </div>
+        </div>
+
+        <div class="container d-flex justify-content-center">
+          <button type="button" class="btn btn-warning mx-1 fw-bold text-white" data-bs-dismiss="modal" value=""><i
+              class="fa-solid fa-rectangle-xmark pe-2"></i>Cancel</button>
+          <button id="btnSaveUser" type="button" class="btn btn-success mx-1 fw-bold" onclick="userModule.save()"><i
+              class="fa-regular fa-square-plus pe-2"></i>Guardar</button>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+

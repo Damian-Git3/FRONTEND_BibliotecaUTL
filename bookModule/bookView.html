@@ -1,0 +1,121 @@
+<div class="card ">
+    <div class="card-body">
+        <div class="my-2">
+            <button type="button" class="btn btn-sm btn-primary fa-solid fa-plus" data-bs-toggle="modal"
+                data-bs-target="#formBook">
+            </button>
+        </div>
+
+        <div class="table-responsive-md ">
+            <table class="table table-bordered">
+                <thead class="table-head">
+                    <tr>
+                        <th>NAME</th>
+                        <th>AUTHOR</th>
+                        <th>UNIVERSITY</th>
+                        <th>STATUS</th>
+                        <th></th>
+
+                    </tr>
+                </thead>
+                <tbody id="tbBooks">
+                    <tr>
+                        <td>Nombre Libro</td>
+                        <td>Autor Libro</td>
+                        <td>Universidad</td>
+                        <td class="text-center"><span class="badge bg-success">Activo</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-danger fa-solid fa-trash-can"></button>
+                            <button class="btn btn-sm btn-warning fa-solid fa-pen-to-square"></button>
+
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+
+        <!-- Usar la clase btn para dar estilo al botón de enviar -->
+        <!-- Usar la clase btn-primary para darle un color azul -->
+        <!-- Usar la clase btn-sm para hacerlo más pequeño -->
+        <!-- Usar la clase fas fa-upload para mostrar el icono de subir -->
+    </div>
+</div>
+
+<div class="modal fade" id="formBook">
+  <div class="modal-dialog">
+      <div class="modal-content">
+
+          <!-- Modal Header -->
+          <div class="modal-header">
+              <h4 class="modal-title">New Books Register</h4>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+
+          <!-- Modal body -->
+          <div class="modal-body">
+            <div class="d-flex flex-row align-items-center d-none">
+                <div class="m-3">
+                    <i class="fa-solid fa-book"></i>
+                </div>
+                <div class="form-floating mb-3 mt-3 w-100">
+                    <input type="text" name="idFrm" id="idFrm" class="form-control form-control-sm"
+                        placeholder="Enter name" />
+                    <label for="idFrm">Id</label>
+                </div>
+            </div>
+
+              <div class="d-flex flex-row align-items-center">
+                  <div class="m-3">
+                      <i class="fa-solid fa-book"></i>
+                  </div>
+                  <div class="form-floating mb-3 mt-3 w-100">
+                      <input type="text" name="nameFrm" id="nameFrm" class="form-control form-control-sm"
+                          placeholder="Enter name" />
+                      <label for="nameFrm">Book's name</label>
+                  </div>
+              </div>
+
+              <div class="d-flex flex-row align-items-center">
+                  <div class="m-3">
+                      <i class="fa-solid fa-book-open-reader"></i>
+                  </div>
+                  <div class="form-floating mb-3 mt-3 w-100">
+                      <input type="text" name="authorFrm" id="authorFrm" class="form-control form-control-sm"
+                          placeholder="Enter author" />
+                      <label for="authorFrm">Author</label>
+                  </div>
+              </div>
+
+              <div class="d-flex flex-row align-items-center">
+                  <div class="m-3">
+                      <i class="fa-solid fa-school"></i>
+                  </div>
+                  <div class="form-floating mb-3 mt-3 w-100">
+                      <input type="text" name="universityFrm" id="universityFrm"
+                          class="form-control form-control-sm" placeholder="Enter University" />
+                      <label for="universityFrm">University</label>
+                  </div>
+              </div>
+              <div class="my-3">
+                  <label for="fileFrm" class="form-label">Select pdf file</label>
+                  <!-- Usar la clase form-control para dar estilo al campo de tipo file -->
+                  <!-- Usar la clase form-control-sm para hacerlo más pequeño -->
+                  <!-- Usar la clase form-control-file para mostrar el icono de archivo -->
+                  <input type="file" name="fileFrm" id="fileFrm" class="form-control form-control-sm form-control-file"
+                      accept=".pdf">
+              </div>
+
+              <div class="container d-flex justify-content-center">
+                  <button type="button" class="btn btn-warning mx-1 fw-bold text-white" data-bs-dismiss="modal"
+                      value=""><i class="fa-solid fa-rectangle-xmark pe-2"></i>Cancel</button>
+                  <button type="button" class="btn btn-success mx-1 fw-bold" onclick="bookModule.save()"><i
+                          class="fa-regular fa-square-plus pe-2" ></i>Guardar</button>
+
+              </div>
+
+          </div>
+
+      </div>
+  </div>
+</div>
