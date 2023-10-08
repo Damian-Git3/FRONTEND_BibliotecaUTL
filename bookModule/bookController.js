@@ -49,7 +49,7 @@ async function sendData(book, type) {
   }
 }
 
-async function deleteBook(id) {
+export async function deleteBook(id) {
   let url = "http://localhost:9000/api/book/" + id;
   try {
     // Crear un objeto con las opciones de la petición
@@ -61,7 +61,7 @@ async function deleteBook(id) {
     // Comprobar si la respuesta es exitosa
     if (respuesta.ok) {
       // Esperar a que se resuelva el método json
-      let resultado = await respuesta.ok();
+      let resultado = await respuesta.status;
       // Devolver el resultado
       return resultado;
     } else {
@@ -75,25 +75,28 @@ async function deleteBook(id) {
 }
 
 export function loadModule() {
+  booksGlobal = []
   let url = "http://localhost:9000/api/book/getAll";
   getData(url).then((books) => {
     books.forEach((element) => {
       booksGlobal.push(element);
     });
+
     document.getElementById("btnClose").click();
-    loadTable(books);
-  });
 
-  /* let url2 = "http://192.168.200.254:8080/api/library/books/getAll";
+    let url3 = "http://192.168.200.217:3000/api/library/books";
 
-  getData(url2).then((books) => {
-    books.forEach((element) => {
-      booksGlobal.push(element);
+    getData(url3).then((books) => {
+      books.forEach((element) => {
+        booksGlobal.push(element);
+      });
+      loadTable(booksGlobal);
+      
     });
-    loadTable(books);
+
   });
 
-  let url3 = "http://192.168.200.217:8080/api/library/books/getAll";
+  /* /* let url2 = "http://192.168.200.254:8080/api/library/books/getAll";
 
   getData(url2).then((books) => {
     books.forEach((element) => {
@@ -101,6 +104,8 @@ export function loadModule() {
     });
     loadTable(books);
   }); */
+
+
 }
 
 export function save() {
@@ -148,9 +153,8 @@ function loadTable(books) {
         <td>${book.name}</td>
         <td>${book.author}</td>
         <td>${book.university}</td>      
-        <td class="text-center"><span class="badge bg-success">${
-          book.status ? book.status : "Activo"
-        }</span></td>
+        <td class="text-center"><span class="badge bg-success">${book.status ? book.status : "Activo"
+      }</span></td>
         <td>  
           <button class="btn btn-sm btn-primary fa-regular fa-eye" onclick="bookModule.seeBook1(${idx})"></button>                          
           <button class="btn btn-sm btn-warning fa-solid fa-pen-to-square" onclick="bookModule.editBook(${idx})"></button>
