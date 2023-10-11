@@ -1,5 +1,7 @@
 let booksGlobal = [];
-let book = {};
+const UTL_SERVER = "http://localhost:9000/api/"
+const BOOK_API = "book/"
+const USER_API = "user/"
 
 // Definir una función asíncrona
 async function getData(url) {
@@ -15,8 +17,7 @@ async function getData(url) {
   }
 }
 
-async function sendData(book, type) {
-  let url = "http://localhost:9000/api/book";
+async function sendData(url, type, book) {
 
   if (type === "PUT") {
     url += "/" + book.id_book;
@@ -49,15 +50,17 @@ async function sendData(book, type) {
   }
 }
 
-export async function deleteBook(id) {
-  let url = "http://localhost:9000/api/book/" + id;
+export async function deleteBook(url,id) {
+  //let url = "http://localhost:9000/api/book/" + id;
+    url += id;
+  
   try {
     // Crear un objeto con las opciones de la petición
     let opciones = {
       method: "DELETE", // Indicar el método HTTP       // Convertir los datos a JSON y enviarlos en el cuerpo de la petición
     };
     // Esperar a que se resuelva la petición fetch
-    let respuesta = await fetch(url);
+    let respuesta = await fetch(url,opciones);
     // Comprobar si la respuesta es exitosa
     if (respuesta.ok) {
       // Esperar a que se resuelva el método json
@@ -82,29 +85,9 @@ export function loadModule() {
       booksGlobal.push(element);
     });
 
-    document.getElementById("btnClose").click();
-
-    let url3 = "http://192.168.200.217:3000/api/library/books";
-
-    getData(url3).then((books) => {
-      books.forEach((element) => {
-        booksGlobal.push(element);
-      });
-      loadTable(booksGlobal);
-      
-    });
+    document.getElementById("btnClose").click();   
 
   });
-
-  /* /* let url2 = "http://192.168.200.254:8080/api/library/books/getAll";
-
-  getData(url2).then((books) => {
-    books.forEach((element) => {
-      booksGlobal.push(element);
-    });
-    loadTable(books);
-  }); */
-
 
 }
 
