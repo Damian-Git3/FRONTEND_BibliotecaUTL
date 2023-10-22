@@ -1,21 +1,38 @@
+let token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bml2ZXJzaWRhZF9pZCI6IjIxMDAyMTAzIiwibm9tYnJlIjoiVVRMX0ZFUiIsImdydXBvIjoiSURHUzcwMiIsImlhdCI6MTY5NzA3NzYxMiwiZXhwIjoxNjk3MDgxMjEyfQ.O39bMKNJ79-wwWKLpEZ5odSJBtmu4-LVgEAGFugn-Jo"
 let booksGlobal = [];
-const UTL_SERVER = "http://localhost:9000/api/"
+const URL_SERVER = "http://192.168.218.217:8080/api/"
 const BOOK_API = "book/"
 const USER_API = "user/"
+const PUT = "PUT";
+const POST = "POST";
 
 // Definir una función asíncrona
 async function getData(url) {
-  try {
-    // Esperar a que se resuelva la petición fetch
-    let respuesta = await fetch(url);
-    // Esperar a que se resuelva el método json
-    let datos = await respuesta.json();
-    // Devolver los datos
-    return datos;
-  } catch (e) {
-    console.log(e);
+
+    let filtro = {
+        filtro:""
+    }
+
+    try {
+      // Incluir el token en el header
+      let opciones = {
+        method: POST,
+        headers: {
+            "Authorization": token,
+            "Content-Type": "application/json"
+          },
+        body: JSON.stringify(filtro)
+      };
+      // Esperar a que se resuelva la petición fetch
+      let respuesta = await fetch(url, opciones);
+      // Esperar a que se resuelva el método json
+      let datos = await respuesta.json();
+      // Devolver los datos
+      return datos;
+    } catch (e) {
+      console.log(e);
+    }
   }
-}
 
 async function sendData(url, type, book) {
 
@@ -79,12 +96,15 @@ export async function deleteBook(url,id) {
 
 export function loadModule() {
   booksGlobal = []
-  let url = "http://localhost:9000/api/book/getAll";
-  getData(url).then((books) => {
+  let url = URL_SERVER + "buscar-libro"
+    console.log(url);
+     getData(url).then((books) => {
     books.forEach((element) => {
       booksGlobal.push(element);
     });
+    console.log("Books",books);
 
+    loadTable(books);
     document.getElementById("btnClose").click();   
 
   });
@@ -107,11 +127,10 @@ export function save() {
 
   cargarLibro(inputFile)
     .then((base64String) => {
-      idBook === ""
-        ? (method = "POST")
-        : ((method = "PUT"), (book.id_book = idBook));
+      idBook === "" ? (method = "POST") : ((method = "PUT"), (book.id_book = idBook));
 
       book.file = base64String;
+
       sendData(book, method).then((book) => {
         cleanForm();
         loadModule();
@@ -125,29 +144,7 @@ export function save() {
     });
 }
 
-function loadTable(books) {
-  let bookTable = document.getElementById("tbBooks");
-  bookTable.innerHTML = "";
 
-  books.forEach((book, idx) => {
-    const newRow = document.createElement("tr");
-    newRow.setAttribute("id", book.id);
-    newRow.innerHTML = `
-        <td>${book.name}</td>
-        <td>${book.author}</td>
-        <td>${book.university}</td>      
-        <td class="text-center"><span class="badge bg-success">${book.status ? book.status : "Activo"
-      }</span></td>
-        <td>  
-          <button class="btn btn-sm btn-primary fa-regular fa-eye" onclick="bookModule.seeBook1(${idx})"></button>                          
-          <button class="btn btn-sm btn-warning fa-solid fa-pen-to-square" onclick="bookModule.editBook(${idx})"></button>
-          <button class="btn btn-sm btn-danger fa-solid fa-trash-can" onclick="bookModule.deleteBook(${idx})"></button>
-        </td>            
-      `;
-
-    bookTable.insertAdjacentHTML("beforeend", newRow.outerHTML);
-  });
-}
 
 export function seeBook1(idx) {
   let libro = booksGlobal[idx];
@@ -274,3 +271,29 @@ export function seeBook2(idBook) {
   // Abre una nueva ventana o pestaña y muestra el PDF
   window.open(blobUrl, "_blank");
 }
+
+function loadTable(books) {
+    let bookTable = document.getElementById("tbBooks");
+    bookTable.innerHTML = "";
+  
+    books.forEach((book, idx) => {
+      const newRow = document.createElement("tr");
+      newRow.setAttribute("id", book.id);
+
+      newRow.innerHTML = `
+          <td>${book?.universidad_id}</td>
+          <td>${book?.universidad_libro_id}</td>
+          <td>${book?.libro_nombre}</td>
+          <td>${book?.tema}</td>
+          <td>${book?.nombre_universidad}</td>
+          <td class="text-center"><span class="badge bg-success">${book?.status ? book?.status : "Activo"}</span></td>
+          <td>  
+            <button class="btn btn-sm btn-primary fa-regular fa-eye" onclick="bookModule.seeBook1(${idx})"></button>                          
+            <button class="btn btn-sm btn-warning fa-solid fa-pen-to-square" onclick="bookModule.editBook(${idx})"></button>
+            <button class="btn btn-sm btn-danger fa-solid fa-trash-can" onclick="bookModule.deleteBook(${idx})"></button>
+          </td>            
+        `;
+  
+      bookTable.insertAdjacentHTML("beforeend", newRow.outerHTML);
+    });
+  }
