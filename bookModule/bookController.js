@@ -1,12 +1,11 @@
-let token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bml2ZXJzaWRhZF9pZCI6IjIxMDAyMTAzIiwibm9tYnJlIjoiVVRMX0ZFUiIsImdydXBvIjoiSURHUzcwMiIsImlhdCI6MTY5NzA3NzYxMiwiZXhwIjoxNjk3MDgxMjEyfQ.O39bMKNJ79-wwWKLpEZ5odSJBtmu4-LVgEAGFugn-Jo"
+let token = ""
 let booksGlobal = [];
 const URL_SERVER = "http://192.168.218.217:8080/api/"
-const BOOK_API = "book/"
-const USER_API = "user/"
+const URL_LOCAL = "http://localhost:8080/BibliotecaUTL/api/book/"
 const PUT = "PUT";
 const POST = "POST";
 
-// Definir una función asíncrona
+
 async function getData(url) {
 
     let filtro = {
@@ -14,8 +13,23 @@ async function getData(url) {
     }
 
     try {
-        // Incluir el token en el header
-        let opciones = {
+        //SERVIDOR LOCAL--------------------------------------------------------------
+        let opcionesWithoutToken = {
+            method: POST,
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(filtro)
+        };
+        // Esperar a que se resuelva la petición fetch
+        let respuestaWithoutToken = await fetch(url, opcionesWithoutToken);
+        // Esperar a que se resuelva el método json
+        let datosWithoutToken = await respuestaWithoutToken.json();
+        // Devolver los datos
+        console.log(datosWithoutToken);
+
+        //SERVIDOR CENTRAL--------------------------------------------------------------
+        let opcionesWithToken = {
             method: POST,
             headers: {
                 "Authorization": token,
@@ -24,25 +38,33 @@ async function getData(url) {
             body: JSON.stringify(filtro)
         };
         // Esperar a que se resuelva la petición fetch
-        let respuesta = await fetch(url, opciones);
+        let respuestaWithToken = await fetch(url, opcionesWithToken);
         // Esperar a que se resuelva el método json
-        let datos = await respuesta.json();
+        let datosWithToken = await respuestaWithToken.json();
         // Devolver los datos
-        return datos;
+        console.log(datosWithToken);
+
+        //return datosWithToken;
     } catch (e) {
         console.log(e);
     }
 }
 
-async function sendData(url, type, book) {
+async function sendData(type, book) {
+    let urlWithoutToken = "http://192.168.218.217:8080/api/book/";
+    let urlWithToken = "http://192.168.218.217:8080/api/book/with-token";
 
     if (type === "PUT") {
-        url += "/" + book.id_book;
+        urlWithoutToken += "/" + book.id_book;
+        urlWithToken += "/" + book.id_book;
     }
 
     try {
+
+            //SERVIDOR LOCAL--------------------------------------------------------------
+
         // Crear un objeto con las opciones de la petición
-        let opciones = {
+        let opcionesWithoutToken = {
             method: type, // Indicar el método HTTP
             headers: {
                 "Content-Type": "application/json", // Indicar el tipo de contenido
@@ -50,16 +72,34 @@ async function sendData(url, type, book) {
             body: JSON.stringify(book), // Convertir los datos a JSON y enviarlos en el cuerpo de la petición
         };
         // Esperar a que se resuelva la petición fetch
-        let respuesta = await fetch(url, opciones);
+        let respuestaWithoutToken = await fetch(urlWithoutToken, opcionesWithoutToken);
         // Comprobar si la respuesta es exitosa
-        if (respuesta.ok) {
+        if (!respuestaWithoutToken.ok) {
+            // Lanzar un error con el código y el mensaje de la respuesta
+            throw new Error(respuestaWithoutToken.status + " " + respuestaWithoutToken.statusText);
+        }
+
+            //SERVIDOR CENTRAL--------------------------------------------------------------
+
+        let opcionesWithToken = {
+            method: type, // Indicar el método HTTP
+            headers: {
+                "Authorization": token,
+                "Content-Type": "application/json", // Indicar el tipo de contenido
+            },
+            body: JSON.stringify(book), // Convertir los datos a JSON y enviarlos en el cuerpo de la petición
+        };
+        // Esperar a que se resuelva la petición fetch
+        let respuestaWithToken = await fetch(urlWithToken, opcionesWithToken);
+        // Comprobar si la respuesta es exitosa
+        if (respuestaWithToken.ok) {
             // Esperar a que se resuelva el método json
-            let resultado = await respuesta.json();
+            let resultado = await respuestaWithToken.json();
             // Devolver el resultado
-            return resultado;
+            //return resultado;
         } else {
             // Lanzar un error con el código y el mensaje de la respuesta
-            throw new Error(respuesta.status + " " + respuesta.statusText);
+            throw new Error(respuestaWithToken.status + " " + respuestaWithToken.statusText);
         }
     } catch (error) {
         // Manejar el error
@@ -68,7 +108,7 @@ async function sendData(url, type, book) {
 }
 
 export async function deleteBook(id) {
-    //let url = "http://localhost:9000/api/book/" + id;
+    
     url += id;
 
     try {
@@ -127,7 +167,7 @@ export function save() {
 
     cargarLibro(inputFile)
         .then((base64String) => {
-            idBook === "" ? (method = "POST") : ((method = "PUT"), (book.id_book = idBook));
+            idBook === "" ? (method = POST) : ((method = PUT), (book.idBook = idBook));
 
             book.file = base64String;
 
@@ -136,15 +176,11 @@ export function save() {
                 loadModule();
             });
 
-            //console.log("Cadena Base64 del libro:", base64String);
-            // Puedes hacer algo con la cadena Base64 aquí, como enviarla al servidor o mostrarla en la página.
         })
         .catch((error) => {
             console.error("Error:", error);
         });
 }
-
-
 
 export function seeBook1(idx) {
     let libro = booksGlobal[idx];
@@ -246,38 +282,76 @@ export function filterTable() {
     }
 }
 
-export function filterTable2() {
-    // Declare variables
-    const input = document.getElementById("txtSearch");
-    const filter = input.value.toUpperCase();
-    const table = document.getElementById("tbBooks");
-    const tr = table.getElementsByTagName("tr");
-
-    // Loop through all table rows
-    for (let i = 0; i < tr.length; i++) {
-        // Check if the <tr> is part of the <thead>
-        if (tr[i].parentNode.nodeName !== "THEAD") {
-            // Get all the <td> elements in the current <tr>
-            const td = tr[i].getElementsByTagName("td");
-
-            // Check if any <td> contains the filter value
-            const rowMatchesFilter = Array.from(td).some((cell) => {
-                const txtValue = cell.textContent || cell.innerText;
-                return txtValue.toUpperCase().includes(filter);
-            });
-
-            // Show or hide the row based on whether any <td> matched the filter
-            tr[i].style.display = rowMatchesFilter ? "" : "none";
-        }
-    }
-}
-
 export function editBook(idx) {
     document.getElementById("btnForm").click();
-    document.getElementById("idFrm").value = booksGlobal[idx].id_book;
+    document.getElementById("idFrm").value = booksGlobal[idx].idBook;
     document.getElementById("nameFrm").value = booksGlobal[idx].name;
     document.getElementById("authorFrm").value = booksGlobal[idx].author;
     document.getElementById("universityFrm").value = booksGlobal[idx].university;
+}
+
+function loadTable(books) {
+    let bookTable = document.getElementById("tbBooks");
+    bookTable.innerHTML = "";
+
+    const rol = localStorage.getItem('rol');
+
+    books.forEach((book, idx) => {
+        const newRow = document.createElement("tr");
+        newRow.setAttribute("id", book.id);
+
+        let buttons = `
+            <button class="btn btn-sm btn-primary fa-regular fa-eye" onclick="bookModule.seeBook1(${idx})"></button>
+        `;
+
+        if (rol === "ADMINISTRADOR") {
+            buttons += `
+                <button class="btn btn-sm btn-warning fa-solid fa-pen-to-square" onclick="bookModule.editBook(${idx})"></button>
+                <button class="btn btn-sm btn-danger fa-solid fa-trash-can" onclick="bookModule.deleteBook(${idx})"></button>
+            `;
+        }
+
+        newRow.innerHTML = `
+          <td>${book?.idBook}</td>
+          <td>${book?.author}</td>
+          <td>${book?.name}</td>
+          <td>${book?.tema}</td>
+          <td>${book?.university}</td>
+          <td class="text-center"><span class="badge bg-success">${book?.status ? book?.status : "Activo"}</span></td>
+          <td>${buttons}</td>            
+        `;
+
+        bookTable.insertAdjacentHTML("beforeend", newRow.outerHTML);
+    });
+}
+
+
+//FUNCIONES SIN USAR POR EL MOMENTO(PENDIENTES DE PROBAR)
+export function refrescarLista(){
+    let filtro = document.getElementById("txtSearch").value;
+
+    let busqueda = {
+        filtro: filtro
+    };
+
+    let token = localStorage.getItem("token");
+    console.log(token.substring(1, token.length - 1));
+    let url = URL_SERVER + "buscar-libro";
+
+    let opciones = {
+        method: POST,
+        headers: {
+            "Authorization": token.substring(1, token.length - 1),
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(busqueda)
+    };
+
+    fetch(url, opciones)
+        .then((respuesta) => respuesta.json())
+        .then((libros) => {
+            loadTable(libros);
+        });
 }
 
 export function seeBook2(idBook) {
@@ -296,82 +370,4 @@ export function seeBook2(idBook) {
 
     // Abre una nueva ventana o pestaña y muestra el PDF
     window.open(blobUrl, "_blank");
-}
-
-function loadTable(books) {
-    let bookTable = document.getElementById("tbBooks");
-    bookTable.innerHTML = "";
-
-    const role = localStorage.getItem('rol');
-
-    books.forEach((book, idx) => {
-        const newRow = document.createElement("tr");
-        newRow.setAttribute("id", book.id);
-
-        let buttons = `
-            <button class="btn btn-sm btn-primary fa-regular fa-eye" onclick="bookModule.seeBook1(${idx})"></button>
-        `;
-
-        if (role === "ADMINISTRADOR") {
-            buttons += `
-                <button class="btn btn-sm btn-warning fa-solid fa-pen-to-square" onclick="bookModule.editBook(${idx})"></button>
-                <button class="btn btn-sm btn-danger fa-solid fa-trash-can" onclick="bookModule.deleteBook(${idx})"></button>
-            `;
-        }
-
-        newRow.innerHTML = `
-          <td>${book?.universidad_id}</td>
-          <td>${book?.universidad_libro_id}</td>
-          <td>${book?.libro_nombre}</td>
-          <td>${book?.tema}</td>
-          <td>${book?.nombre_universidad}</td>
-          <td class="text-center"><span class="badge bg-success">${book?.status ? book?.status : "Activo"}</span></td>
-          <td>${buttons}</td>            
-        `;
-
-        bookTable.insertAdjacentHTML("beforeend", newRow.outerHTML);
-    });
-}
-
-function loadTable2(books) {
-    const bookTable = document.getElementById("tbBooks");
-
-    // Clear the table
-    while (bookTable.firstChild) {
-        bookTable.firstChild.remove();
-    }
-
-    books.forEach((book, idx) => {
-        const newRow = document.createElement("tr");
-        newRow.setAttribute("id", book.id);
-
-        // Create and append each cell
-        ["universidad_id", "universidad_libro_id", "libro_nombre", "tema", "nombre_universidad"].forEach((property) => {
-            const newCell = document.createElement("td");
-            newCell.textContent = book[property];
-            newRow.appendChild(newCell);
-        });
-
-        // Create and append the status cell
-        const statusCell = document.createElement("td");
-        statusCell.className = "text-center";
-        const statusBadge = document.createElement("span");
-        statusBadge.className = "badge bg-success";
-        statusBadge.textContent = book.status ? book.status : "Activo";
-        statusCell.appendChild(statusBadge);
-        newRow.appendChild(statusCell);
-
-        // Create and append the action buttons
-        const actionCell = document.createElement("td");
-        ["seeBook1", "editBook", "deleteBook"].forEach((action, i) => {
-            const actionButton = document.createElement("button");
-            actionButton.className = `btn btn-sm ${["btn-primary fa-regular fa-eye", "btn-warning fa-solid fa-pen-to-square", "btn-danger fa-solid fa-trash-can"][i]}`;
-            actionButton.onclick = () => bookModule[action](idx);
-            actionCell.appendChild(actionButton);
-        });
-        newRow.appendChild(actionCell);
-
-        // Append the row to the table
-        bookTable.appendChild(newRow);
-    });
 }

@@ -1,4 +1,8 @@
-let ipBack = "localhost:9000";
+let token = ""
+const URL_SERVER = "http://192.168.218.217:8080/api/"
+const URL_LOCAL = "http://localhost:8080/BibliotecaUTL/api/user/"
+const PUT = "PUT";
+const POST = "POST";
 
 export function findUser() {
     let email = document.getElementById("user");
@@ -19,42 +23,9 @@ export function findUser() {
     }
 }
 
-// Definir una función async que tome como argumentos el user y el password
-/* async function getUser(user, password) {
-  // Crear un objeto con las propiedades user y password
-  let parametros = {
-    user: user,
-    password: password,
-  };
-  // Convertir el objeto a una cadena JSON
-  let body = JSON.stringify(parametros);
-  // Crear una opción de solicitud con el método POST y el body
-  let opciones = {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: body
-  };
-
-  
-
-  // Usar un bloque try-catch para manejar los errores
-  try {
-    // Enviar la solicitud al API usando fetch y await
-    let response = await fetch(url, opciones);
-    // Convertir la respuesta a un objeto JSON
-    let data = await response.json();
-    // Mostrar los datos en la consola
-    console.log(data);
-    return data;
-  } catch (error) {
-    // Mostrar el error en la consola
-    console.error(error);
-  }
-} */
-
 async function login(email, password) {
 
-    let url = " http://" + ipBack + "/api/user/login";
+    let url = URL_LOCAL +  "login";
     let loginData = {
         "email": email,
         "password": password
@@ -84,30 +55,5 @@ async function login(email, password) {
     }
 }
 
-export function booksModule() {
-    fetch("../bookModule/bookView.html")
-        .then(function (response) {
-            return response.text();
-        })
-        .then(function (html) {
-            document.getElementById("body-content").innerHTML = html;
-            import("../bookModule/bookController.js").then(function (controller) {
-                bookModule = controller;
-                bookModule.cargarModulo();
-            });
-        });
-}
 
-export function usersModule() {
-    fetch("../userModule/userView.html")
-        .then(function (response) {
-            return response.text();
-        })
-        .then(function (html) {
-            document.getElementById("body-content").innerHTML = html;
-            import("../userModule/userController.js").then(function (controller) {
-                userModule = controller;
-                userModule.cargarModulo();
-            });
-        });
-}
+

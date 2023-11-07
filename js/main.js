@@ -1,59 +1,114 @@
 let bookModule;
 let loginMod;
 let userModule;
-booksModule();
 
+let navBar = document.getElementById("navBar");
+navBar.style.display = "none";
+loginModule();
+
+/**
+ * Carga el módulo de inicio de sesión.
+ * @async
+ * @function loginModule
+ * @throws {Error} Si hay un error al cargar el módulo.
+ * @returns {Promise<void>}
+ */
 async function loginModule() {
-  try {
-    // Esperar la respuesta de la petición fetch
-    let response = await fetch("../loginModule/loginView.html");
-    // Esperar el texto de la respuesta
-    let html = await response.text();
-    // Insertar el html en el elemento con id body-content
-    document.getElementById("body-content").innerHTML = html;
+    try {
+        // Esperar la respuesta de la petición fetch
+        let response = await fetch("../loginModule/loginView.html");
+        // Esperar el texto de la respuesta
+        let html = await response.text();
+        // Insertar el html en el elemento con id body-content
+        document.getElementById("body-content").innerHTML = html;
 
-    loginMod = await import("../loginModule/loginController.js");
-    //Llamar al método cargarModulo del módulo userModule
+        loginMod = await import("../loginModule/loginController.js");
+        //Llamar al método cargarModulo del módulo userModule
 
-  } catch (error) {
-    // Manejar el error
-    console.error(error);
-  }
+        return loginMod;
+
+    } catch (error) {
+        // Manejar el error
+        console.error(error);
+    }
 }
 
+/**
+ * Carga el módulo de usuarios, importando userView.html y userController.js, y llamando al método cargarModulo del módulo userController.
+ * @async
+ * @function usersModule
+ * @throws {Error} Si ocurre un error al cargar el módulo de usuarios.
+ * @returns {Promise<void>}
+ */
 async function usersModule() {
-  try {
-    // Esperar la respuesta de la petición fetch
-    let response = await fetch("../userModule/userView.html");
-    // Esperar el texto de la respuesta
-    let html = await response.text();
-    // Insertar el html en el elemento con id body-content
-    document.getElementById("body-content").innerHTML = html;
-    // Esperar la importación del módulo userController.js
-    userModule = await import("../userModule/userController.js");
-    //Llamar al método cargarModulo del módulo userModule
-    userModule.cargarModulo();
+    try {
+        // Esperar la respuesta de la petición fetch
+        let response = await fetch("../userModule/userView.html");
+        // Esperar el texto de la respuesta
+        let html = await response.text();
+        // Insertar el html en el elemento con id body-content
+        document.getElementById("body-content").innerHTML = html;
+        // Esperar la importación del módulo userController.js
+        userModule = await import("../userModule/userController.js");
+        //Llamar al método cargarModulo del módulo userModule
+        userModule.cargarModulo();
 
-  } catch (error) {
-    // Manejar el error
-    console.error(error);
-  }
+    } catch (error) {
+        // Manejar el error
+        console.error(error);
+    }
 }
 
+/**
+ * Carga el módulo de libros y llama al método cargarModulo del módulo bookController.
+ * @async
+ * @function booksModule
+ * @returns {Promise<void>}
+ */
 async function booksModule() {
-  try {
-    let response = await fetch("../bookModule/bookView.html");
-    let html = await response.text();
+    try {
+        let response = await fetch("../bookModule/bookView.html");
 
-    document.getElementById("body-content").innerHTML = html;
+        let html = await response.text();
 
-    bookModule = await import("../bookModule/bookController.js");
-    //Llamar al método cargarModulo del módulo userModule
-    bookModule.loadModule();
+        document.getElementById("body-content").innerHTML = html;
 
-  } catch (error) {
-    console.error(error);
-  }
+        bookModule = await import("../bookModule/bookController.js");
+        //Llamar al método cargarModulo del módulo userModule
+        bookModule.loadModule();
+
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+/**
+ * Clears the localStorage and redirects the user to the index page.
+ * @function logout
+ * @returns {void}
+ */
+export function logout() {
+    localStorage.clear();
+    window.location.href = "index.html";
+}
+
+function login() {
+    let email = document.getElementById("email");
+    let pass = document.getElementById("password");
+
+    loginMod.login(email, pass).then((userValid) => {
+        if (userValid) {
+            if (userValid.login === true) {
+                localStorage.setItem('rol', userValid.rol.UPPERCASE());
+
+                booksModule();
+            }
+        }
+    });
+
+    if (localStorage.getItem('rol') !== 'ADMINISTRADOR') {
+        document.getElementById('navUser').style.display = 'none';
+    }
 }
 
 

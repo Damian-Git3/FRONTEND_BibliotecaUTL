@@ -1,7 +1,112 @@
-let usersArr = [];
-let ipBack = "localhost:9000";
+let usersGlobal = [];
+let token = ""
 
-// Definir una función asíncrona
+let idFrm = document.getElementById("idFrm");
+let userFrm = document.getElementById("userFrm");
+let mailFrm = document.getElementById("mailFrm");
+let passFrm = document.getElementById("passFrm");
+let rolFrm = document.getElementById("rolFrm");
+
+let tblUsers = document.getElementById("tbUsers");
+
+const URL_SERVER = "http://192.168.218.217:8080/api/"
+const URL_LOCAL = "http://localhost:8080/BibliotecaUTL/api/user/"
+const PUT = "PUT";
+const POST = "POST";
+
+export function loadModule() {
+    let url = URL_LOCAL + "getAll";
+    getData(url).then((users) => {
+        usersGlobal = users;
+
+        if (!tblUsers) {
+            console.error('No se encontró la tabla de usuarios');
+            return;
+        }
+
+        usersGlobal.forEach((user) => {
+            const newRow = createUserRow(user);
+            userTable.appendChild(newRow);
+        });
+    }).catch((error) => {
+        console.error('Error al obtener los datos de los usuarios:', error);
+    });
+}
+
+export function save() {
+
+    // let id = document.getElementById("idFrm").value;
+    // let user = document.getElementById("userFrm").value;
+    // let mail = document.getElementById("mailFrm").value;
+    // let pass = document.getElementById("passFrm").value;
+    // let rol = document.getElementById("rolFrm").value;
+
+    let userObj = {};
+    userObj.idUser = idFrm.value;
+    userObj.email = mailFrm.value;
+    userObj.name = userFrm.value;
+    userObj.password = passFrm.value;
+    userObj.rol = rolFrm.value;
+
+    sendData(userObj).then((user) => {
+        cleanForm();
+        loadModule();
+    })
+}
+
+export async function deleteUser(id) {
+    let url = URL_LOCAL + "delete/" + id;
+
+    try {
+        // Crear un objeto con las opciones de la petición
+        let opciones = {
+            method: "DELETE", // Indicar el método HTTP
+        };
+        // Esperar a que se resuelva la petición fetch
+        let respuesta = await fetch(url, opciones);
+        // Comprobar si la respuesta es exitosa
+        if (respuesta.ok) {
+            // Esperar a que se resuelva el método json
+            let resultado = await respuesta.json();
+            // Devolver el resultado
+            console.log(resultado);
+            return resultado;
+        } else {
+            // Lanzar un error con el código y el mensaje de la respuesta
+            throw new Error(respuesta.status + " " + respuesta.statusText);
+        }
+    } catch (error) {
+        // Manejar el error
+        console.error(error);
+    }
+}
+
+export function loadForm(id) {
+    // const id = document.getElementById("idFrm");
+    // const user = document.getElementById("userFrm");
+    // const mail = document.getElementById("mailFrm");
+    // const pass = document.getElementById("passFrm");
+    // const rol = document.getElementById("rolFrm");
+
+    if (idFrm) idFrm.value = usersGlobal[id]?.idUser;
+    if (userFrm) userFrm.value = usersGlobal[id]?.name;
+    if (mailFrm) mailFrm.value = usersGlobal[id]?.email;
+    if (passFrm) passFrm.value = usersGlobal[id]?.password;
+    if (rolFrm) rolFrm.value = usersGlobal[id]?.rol;
+}
+
+function createUserRow(user) {
+    const newRow = document.createElement("tr");
+    newRow.setAttribute("id", user.id_user);
+    newRow.textContent = `
+      ${user.name}
+      ${user.email}
+      ${user.rol}
+      ${user?.status ? user.status : ""}
+      `;
+    return newRow;
+}
+
 async function getData(url) {
 
     try {
@@ -16,17 +121,18 @@ async function getData(url) {
     }
 }
 
-async function sendData(type, user) {
+async function sendData(user) {
+    let method;
     let url;
-    let urlRegister = "http://" + ipBack + "/api/user/register";
-    let urlUpdate = "http://" + ipBack + "/api/user/update";
 
-    if (type === "POST") {
-        url = urlRegister;
+    user.idBook === "" ? (method = POST) : (method = PUT);
+
+    if (method === "POST") {
+        url = URL_LOCAL + "register" ;
     }
 
-    if (type === "PUT") {
-        url = urlUpdate
+    if (method === "PUT") {
+        url = URL_LOCAL + "update";
     }
 
     try {
@@ -55,104 +161,6 @@ async function sendData(type, user) {
         console.error(error);
     }
 }
-
-export async function deleteUser(url, id) {
-    let url = "http://" + ipBack + "/api/book/";
-    url += id;
-
-    try {
-        // Crear un objeto con las opciones de la petición
-        let opciones = {
-            method: "DELETE", // Indicar el método HTTP
-        };
-        // Esperar a que se resuelva la petición fetch
-        let respuesta = await fetch(url, opciones);
-        // Comprobar si la respuesta es exitosa
-        if (respuesta.ok) {
-            // Esperar a que se resuelva el método json
-            let resultado = await respuesta.json();
-            // Devolver el resultado
-            return resultado;
-        } else {
-            // Lanzar un error con el código y el mensaje de la respuesta
-            throw new Error(respuesta.status + " " + respuesta.statusText);
-        }
-    } catch (error) {
-        // Manejar el error
-        console.error(error);
-    }
-}
-
-export function save() {
-    let method;
-    let id = document.getElementById("idFrm").value;
-    let user = document.getElementById("userFrm").value;
-    let mail = document.getElementById("mailFrm").value;
-    let pass = document.getElementById("passFrm").value;
-    let rol = document.getElementById("rolFrm").value;
-
-    let userObj = {};
-
-    userObj.name = user;
-    userObj.email = mail;
-    userObj.pass = pass;
-    userObj.rol = rol;
-
-    idBook === "" ? (method = "POST") : ((method = "PUT"), (userObj.idUser = id));
-
-
-
-    sendData(method, userObj).then((user) => {
-        cleanForm();
-        cargarModulo();
-    })
-}
-
-export function loadForm(id) {
-    const idFrm = document.getElementById("idFrm");
-    const userFrm = document.getElementById("userFrm");
-    const mailFrm = document.getElementById("mailFrm");
-    const passFrm = document.getElementById("passFrm");
-    const rolFrm = document.getElementById("rolFrm");
-
-    if (idFrm) idFrm.value = usersArr[id]?.id_user;
-    if (userFrm) userFrm.value = usersArr[id]?.name;
-    if (mailFrm) mailFrm.value = usersArr[id]?.email;
-    if (passFrm) passFrm.value = usersArr[id]?.password;
-    if (rolFrm) rolFrm.value = usersArr[id]?.rol;
-}
-
-export function cargarModulo() {
-    getData(`http://${ipBack}/api/user/getAll`).then((users) => {
-        usersArr = users;
-        let userTable = document.getElementById("tbUsers");
-
-        if (!userTable) {
-            console.error('No se encontró la tabla de usuarios');
-            return;
-        }
-
-        users.forEach((user) => {
-            const newRow = createUserRow(user);
-            userTable.appendChild(newRow);
-        });
-    }).catch((error) => {
-        console.error('Error al obtener los datos de los usuarios:', error);
-    });
-}
-
-function createUserRow(user) {
-    const newRow = document.createElement("tr");
-    newRow.setAttribute("id", user.id_user);
-    newRow.textContent = `
-      ${user.name}
-      ${user.email}
-      ${user.rol}
-      ${user?.status ? user.status : ""}
-      `;
-    return newRow;
-}
-
 
 
 
