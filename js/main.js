@@ -1,10 +1,12 @@
-let bookModule;
-let loginMod;
-let userModule;
 
-let navBar = document.getElementById("navBar");
-navBar.style.display = "none";
-loginModule();
+console.log("HOLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+
+ocultarNavBar()
+getLoginModule()
+
+function ocultarNavBar() {
+    document.getElementById("navBar").classList.add("d-none");
+}
 
 /**
  * Carga el módulo de inicio de sesión.
@@ -13,19 +15,25 @@ loginModule();
  * @throws {Error} Si hay un error al cargar el módulo.
  * @returns {Promise<void>}
  */
-async function loginModule() {
+async function getLoginModule() {
     try {
         // Esperar la respuesta de la petición fetch
         let response = await fetch("../loginModule/loginView.html");
+
+        // Verificar si la petición fue exitosa
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         // Esperar el texto de la respuesta
         let html = await response.text();
-        // Insertar el html en el elemento con id body-content
+
+        // Insertar el html en el elemento body-content
         document.getElementById("body-content").innerHTML = html;
 
-        loginMod = await import("../loginModule/loginController.js");
-        //Llamar al método cargarModulo del módulo userModule
-
-        return loginMod;
+        // loginMod = await import("../loginModule/loginController.js");
+        // //Llamar al método cargarModulo del módulo userModule      
+        // return loginMod;
 
     } catch (error) {
         // Manejar el error
@@ -40,7 +48,7 @@ async function loginModule() {
  * @throws {Error} Si ocurre un error al cargar el módulo de usuarios.
  * @returns {Promise<void>}
  */
-async function usersModule() {
+async function getModule() {
     try {
         // Esperar la respuesta de la petición fetch
         let response = await fetch("../userModule/userView.html");
@@ -65,7 +73,7 @@ async function usersModule() {
  * @function booksModule
  * @returns {Promise<void>}
  */
-async function booksModule() {
+async function getModule() {
     try {
         let response = await fetch("../bookModule/bookView.html");
 
@@ -87,7 +95,7 @@ async function booksModule() {
  * @function logout
  * @returns {void}
  */
-export function logout() {
+function logout() {
     localStorage.clear();
     window.location.href = "index.html";
 }
@@ -110,5 +118,4 @@ function login() {
         document.getElementById('navUser').style.display = 'none';
     }
 }
-
 
