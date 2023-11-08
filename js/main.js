@@ -1,20 +1,37 @@
 
-console.log("HOLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+let loginModule;
+let bookModule;
+let userModule;
 
 ocultarNavBar()
 getLoginModule()
 
-function ocultarNavBar() {
+function hideNavBar() {
     document.getElementById("navBar").classList.add("d-none");
 }
 
-/**
- * Carga el módulo de inicio de sesión.
- * @async
- * @function loginModule
- * @throws {Error} Si hay un error al cargar el módulo.
- * @returns {Promise<void>}
- */
+function logout() {
+    localStorage.clear();
+    window.location.href = "index.html";
+}
+
+function login() {
+    let email = document.getElementById("email");
+    let pass = document.getElementById("password");
+
+    loginMod.login(email, pass).then((userValid) => {
+        if (userValid) {
+            if (userValid.login === true) {
+                localStorage.setItem('rol', userValid.rol.UPPERCASE());
+                document.getElementById("navBar").classList.remove("d-none");
+                loginModule.getToken();
+                getBookModule();
+            }
+        }
+    });
+    
+}
+
 async function getLoginModule() {
     try {
         // Esperar la respuesta de la petición fetch
@@ -31,9 +48,9 @@ async function getLoginModule() {
         // Insertar el html en el elemento body-content
         document.getElementById("body-content").innerHTML = html;
 
-        // loginMod = await import("../loginModule/loginController.js");
-        // //Llamar al método cargarModulo del módulo userModule      
-        // return loginMod;
+        loginModule = await import("../loginModule/loginController.js");
+        //Llamar al método cargarModulo del módulo userModule      
+        
 
     } catch (error) {
         // Manejar el error
@@ -41,14 +58,7 @@ async function getLoginModule() {
     }
 }
 
-/**
- * Carga el módulo de usuarios, importando userView.html y userController.js, y llamando al método cargarModulo del módulo userController.
- * @async
- * @function usersModule
- * @throws {Error} Si ocurre un error al cargar el módulo de usuarios.
- * @returns {Promise<void>}
- */
-async function getModule() {
+async function getUserModule() {
     try {
         // Esperar la respuesta de la petición fetch
         let response = await fetch("../userModule/userView.html");
@@ -59,7 +69,7 @@ async function getModule() {
         // Esperar la importación del módulo userController.js
         userModule = await import("../userModule/userController.js");
         //Llamar al método cargarModulo del módulo userModule
-        userModule.cargarModulo();
+        userModule.loadModule();
 
     } catch (error) {
         // Manejar el error
@@ -67,13 +77,7 @@ async function getModule() {
     }
 }
 
-/**
- * Carga el módulo de libros y llama al método cargarModulo del módulo bookController.
- * @async
- * @function booksModule
- * @returns {Promise<void>}
- */
-async function getModule() {
+async function getBookModule() {
     try {
         let response = await fetch("../bookModule/bookView.html");
 
@@ -89,33 +93,3 @@ async function getModule() {
         console.error(error);
     }
 }
-
-/**
- * Clears the localStorage and redirects the user to the index page.
- * @function logout
- * @returns {void}
- */
-function logout() {
-    localStorage.clear();
-    window.location.href = "index.html";
-}
-
-function login() {
-    let email = document.getElementById("email");
-    let pass = document.getElementById("password");
-
-    loginMod.login(email, pass).then((userValid) => {
-        if (userValid) {
-            if (userValid.login === true) {
-                localStorage.setItem('rol', userValid.rol.UPPERCASE());
-
-                booksModule();
-            }
-        }
-    });
-
-    if (localStorage.getItem('rol') !== 'ADMINISTRADOR') {
-        document.getElementById('navUser').style.display = 'none';
-    }
-}
-

@@ -128,7 +128,7 @@ async function sendData(user) {
     user.idBook === "" ? (method = POST) : (method = PUT);
 
     if (method === "POST") {
-        url = URL_LOCAL + "register" ;
+        url = URL_LOCAL + "register";
     }
 
     if (method === "PUT") {
@@ -161,6 +161,35 @@ async function sendData(user) {
         console.error(error);
     }
 }
+
+export async function getToken() {
+    let url = URL_SERVER + "token";
+    let user = {
+        "usuario": "admin",
+        "contrasena": "admin"
+    }
+
+    let opciones = {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded;charsert=UTF-8",
+        },
+        body: user,
+    }
+
+    let response = await fetch(url, opciones);
+    let token = await response.text();
+    localStorage.setItem("token", token);
+}
+
+function cleanForm() {
+    idFrm.value = "";
+    userFrm.value = "";
+    mailFrm.value = "";
+    passFrm.value = "";
+    rolFrm.value = "";
+}
+
 
 
 

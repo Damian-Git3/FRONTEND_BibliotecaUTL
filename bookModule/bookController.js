@@ -1,4 +1,4 @@
-let token = ""
+
 let booksGlobal = [];
 const URL_SERVER = "http://192.168.218.217:8080/api/"
 const URL_LOCAL = "http://localhost:8080/BibliotecaUTL/api/book/"
@@ -60,9 +60,7 @@ async function sendData(type, book) {
     }
 
     try {
-
-            //SERVIDOR LOCAL--------------------------------------------------------------
-
+        //SERVIDOR LOCAL--------------------------------------------------------------
         // Crear un objeto con las opciones de la petición
         let opcionesWithoutToken = {
             method: type, // Indicar el método HTTP
@@ -79,27 +77,33 @@ async function sendData(type, book) {
             throw new Error(respuestaWithoutToken.status + " " + respuestaWithoutToken.statusText);
         }
 
+        if (type === POST) {
             //SERVIDOR CENTRAL--------------------------------------------------------------
-
-        let opcionesWithToken = {
-            method: type, // Indicar el método HTTP
-            headers: {
-                "Authorization": token,
-                "Content-Type": "application/json", // Indicar el tipo de contenido
-            },
-            body: JSON.stringify(book), // Convertir los datos a JSON y enviarlos en el cuerpo de la petición
-        };
-        // Esperar a que se resuelva la petición fetch
-        let respuestaWithToken = await fetch(urlWithToken, opcionesWithToken);
-        // Comprobar si la respuesta es exitosa
-        if (respuestaWithToken.ok) {
-            // Esperar a que se resuelva el método json
-            let resultado = await respuestaWithToken.json();
-            // Devolver el resultado
-            //return resultado;
-        } else {
-            // Lanzar un error con el código y el mensaje de la respuesta
-            throw new Error(respuestaWithToken.status + " " + respuestaWithToken.statusText);
+            let bookObject = {
+                "libro_id":book.idBook.toString(),
+                "libro_nombre":book.name,
+                "tema": "",
+            }
+            let opcionesWithToken = {
+                method: POST, // Indicar el método HTTP
+                headers: {
+                    "Authorization": localStorage.getItem("token"),
+                    "Content-Type": "application/json", // Indicar el tipo de contenido
+                },
+                body: JSON.stringify(bookObject), // Convertir los datos a JSON y enviarlos en el cuerpo de la petición
+            };
+            // Esperar a que se resuelva la petición fetch
+            let respuestaWithToken = await fetch(urlWithToken, opcionesWithToken);
+            // Comprobar si la respuesta es exitosa
+            if (respuestaWithToken.ok) {
+                // Esperar a que se resuelva el método json
+                let resultado = await respuestaWithToken.json();
+                // Devolver el resultado
+                console.log("RESPUESTA SERVIDOR CENTRAL: " + resultado);
+            } else {
+                // Lanzar un error con el código y el mensaje de la respuesta
+                throw new Error(respuestaWithToken.status + " " + respuestaWithToken.statusText);
+            }
         }
     } catch (error) {
         // Manejar el error
