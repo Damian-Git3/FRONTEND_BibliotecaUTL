@@ -5,21 +5,58 @@ const URL_LOCAL = "http://localhost:8080/BibliotecaUTL/api/book/"
 const PUT = "PUT";
 const POST = "POST";
 
-export function loadModule() {
+export async function loadModule() {
+  console.log("BOOK CONTROLLER FUNCTION LOAD MODULE");
   booksGlobal = [];
 
-  console.log(url);
-  getData().then((books) => {
-    books.forEach((element) => {
-      booksGlobal.push(element);
+  try {
+    let books = await getLocalData();
+
+    books.forEach((book) => {
+      booksGlobal.push(book);
     });
-    console.log("Books", books);
 
     loadTable(books);
+
     document.getElementById("btnClose").click();
 
-  });
+  } catch (error) {
+    console.error("Error loadModule Books:", error);
+  }
+}
 
+export function seeBook1(idx) {
+  let libro = booksGlobal[idx];
+
+  if (libro.file === null) {
+    alert("No hay libro");
+    return;
+  }
+  // Crear un Blob a partir de la cadena base64
+  let binaryPDF = atob(libro.file);
+  let arrayBuffer = new ArrayBuffer(binaryPDF.length);
+  let uint8Array = new Uint8Array(arrayBuffer);
+  for (let i = 0; i < binaryPDF.length; i++) {
+    uint8Array[i] = binaryPDF.charCodeAt(i);
+  }
+  let blob = new Blob([arrayBuffer], { type: "application/pdf" });
+
+  // Crear una URL de datos
+  let url = URL.createObjectURL(blob);
+
+  // Abrir una nueva ventana del navegador con el PDF
+  window.open(url, "_blank");
+
+  // Limpiar la URL de datos después de abrir la ventana
+  URL.revokeObjectURL(url);
+}
+
+export function cleanForm() {
+  document.getElementById("idFrm").value = "";
+  document.getElementById("nameFrm").value = "";
+  document.getElementById("authorFrm").value = "";
+  document.getElementById("universityFrm").value = "";
+  document.getElementById("fileFrm").value = "";
 }
 
 export function save() {
@@ -51,40 +88,6 @@ export function save() {
     .catch((error) => {
       console.error("Error:", error);
     });
-}
-
-export function seeBook1(idx) {
-  let libro = booksGlobal[idx];
-
-  if (libro.file === null) {
-    alert("No hay libro");
-    return;
-  }
-  // Crear un Blob a partir de la cadena base64
-  const binaryPDF = atob(libro.file);
-  const arrayBuffer = new ArrayBuffer(binaryPDF.length);
-  const uint8Array = new Uint8Array(arrayBuffer);
-  for (let i = 0; i < binaryPDF.length; i++) {
-    uint8Array[i] = binaryPDF.charCodeAt(i);
-  }
-  const blob = new Blob([arrayBuffer], { type: "application/pdf" });
-
-  // Crear una URL de datos
-  const url = URL.createObjectURL(blob);
-
-  // Abrir una nueva ventana del navegador con el PDF
-  window.open(url, "_blank");
-
-  // Limpiar la URL de datos después de abrir la ventana
-  URL.revokeObjectURL(url);
-}
-
-export function cleanForm() {
-  document.getElementById("idFrm").value = "";
-  document.getElementById("nameFrm").value = "";
-  document.getElementById("authorFrm").value = "";
-  document.getElementById("universityFrm").value = "";
-  document.getElementById("fileFrm").value = "";
 }
 
 export function filterTable() {
@@ -124,7 +127,7 @@ export function filterTable() {
   }
 }
 
-export function editBook(idx) {
+export function edit(idx) {
   document.getElementById("btnForm").click();
   document.getElementById("idFrm").value = booksGlobal[idx].idBook;
   document.getElementById("nameFrm").value = booksGlobal[idx].name;
@@ -132,118 +135,62 @@ export function editBook(idx) {
   document.getElementById("universityFrm").value = booksGlobal[idx].university;
 }
 
-async function getData() {
-  let books;
+async function getLocalData() {
+
   let url = URL_LOCAL + "getAll";
 
   try {
     //SERVIDOR LOCAL--------------------------------------------------------------
-    let opcionesWithoutToken = {
+    let options = {
       method: POST,
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify(filtro)
     };
+
     // Esperar a que se resuelva la petición fetch
-    let respuestaWithoutToken = await fetch(url, opcionesWithoutToken);
+    let response = await fetch(url, options);
+    console.log("Response Get Books", response);
+
     // Esperar a que se resuelva el método json
-    let datosWithoutToken = await respuestaWithoutToken.json();
-    // Devolver los datos
-    //console.log(datosWithoutToken);
-    books = datosWithoutToken;
+    let books = await response.json();
 
-    //SERVIDOR CENTRAL--------------------------------------------------------------
-    let opcionesWithToken = {
-      method: POST,
-      headers: {
-        "Authorization": token,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(filtro)
-    };
-
-    let filtro = {
-      filtro: ""
-    }
-
-    url = URL_SERVER + "buscar-libro";
-    // Esperar a que se resuelva la petición fetch
-    let respuestaWithToken = await fetch(url, opcionesWithToken);
-    // Esperar a que se resuelva el método json
-    let datosWithToken = await respuestaWithToken.json();
-    // Devolver los datos
-    console.log(datosWithToken);
-    books = transformToLocalBook(datosWithToken);
-
+    // Devolver los datos    
     return books;
+
   } catch (e) {
-    console.log(e);
+    return e;
   }
 }
 
-async function sendData(type, book) {
-  let urlWithoutToken = "http://192.168.218.217:8080/api/book/";
-  let urlWithToken = "http://192.168.218.217:8080/api/book/with-token";
+async function sendData(book) {
+  let url = "http://192.168.218.217:8080/api/book/";
+  let method;
 
-  if (type === "PUT") {
-    urlWithoutToken += "/" + book.id_book;
-    urlWithToken += "/" + book.id_book;
-  }
+  method = book?.idBook? PUT : POST; 
+
+  let options = {
+    method: method, // Indicar el método HTTP
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: bookObject
+  };
 
   try {
-    //SERVIDOR LOCAL--------------------------------------------------------------
-    // Crear un objeto con las opciones de la petición
-    let opcionesWithoutToken = {
-      method: type, // Indicar el método HTTP
-      headers: {
-        "Content-Type": "application/json", // Indicar el tipo de contenido
-      },
-      body: JSON.stringify(book), // Convertir los datos a JSON y enviarlos en el cuerpo de la petición
-    };
-    // Esperar a que se resuelva la petición fetch
-    let respuestaWithoutToken = await fetch(urlWithoutToken, opcionesWithoutToken);
-    // Comprobar si la respuesta es exitosa
-    if (!respuestaWithoutToken.ok) {
-      // Lanzar un error con el código y el mensaje de la respuesta
-      throw new Error(respuestaWithoutToken.status + " " + respuestaWithoutToken.statusText);
-    }
 
-    if (type === POST) {
-      //SERVIDOR CENTRAL--------------------------------------------------------------
-      let bookObject = {
-        "libro_id": book.idBook.toString(),
-        "libro_nombre": book.name,
-        "tema": "",
-      }
-      let opcionesWithToken = {
-        method: POST, // Indicar el método HTTP
-        headers: {
-          "Authorization": localStorage.getItem("token"),
-          "Content-Type": "application/json", // Indicar el tipo de contenido
-        },
-        body: JSON.stringify(bookObject), // Convertir los datos a JSON y enviarlos en el cuerpo de la petición
-      };
-      // Esperar a que se resuelva la petición fetch
-      let respuestaWithToken = await fetch(urlWithToken, opcionesWithToken);
-      // Comprobar si la respuesta es exitosa
-      if (respuestaWithToken.ok) {
-        // Esperar a que se resuelva el método json
-        let resultado = await respuestaWithToken.json();
-        // Devolver el resultado
-        console.log("RESPUESTA SERVIDOR CENTRAL: " + resultado);
-      } else {
-        // Lanzar un error con el código y el mensaje de la respuesta
-        throw new Error(respuestaWithToken.status + " " + respuestaWithToken.statusText);
-      }
-    }
+    let response = await fetch(url, options);
+
+    let resultado = await response.json();
+    return resultado;
   } catch (error) {
     // Manejar el error
     console.error(error);
   }
 }
 
-export async function deleteBook(id) {
+export async function remove(id) {
 
   let url = URL_LOCAL + "delete/" + id;
 
@@ -303,11 +250,10 @@ function loadTable(books) {
   let bookTable = document.getElementById("tbBooks");
   bookTable.innerHTML = "";
 
-  const rol = localStorage.getItem('rol');
+  let rol = localStorage.getItem('rol');
 
   books.forEach((book, idx) => {
-    const newRow = document.createElement("tr");
-    newRow.setAttribute("id", book.id);
+    let newRow = document.createElement("tr");
 
     let buttons = `
             <button class="btn btn-sm btn-primary fa-regular fa-eye" onclick="bookModule.seeBook1(${idx})"></button>
@@ -315,8 +261,8 @@ function loadTable(books) {
 
     if (rol === "ADMINISTRADOR") {
       buttons += `
-                <button class="btn btn-sm btn-warning fa-solid fa-pen-to-square" onclick="bookModule.editBook(${idx})"></button>
-                <button class="btn btn-sm btn-danger fa-solid fa-trash-can" onclick="bookModule.deleteBook(${idx})"></button>
+                <button class="btn btn-sm btn-warning fa-solid fa-pen-to-square" onclick="bookModule.edit(${idx})"></button>
+                <button class="btn btn-sm btn-danger fa-solid fa-trash-can" onclick="bookModule.remove(${idx})"></button>
             `;
     }
 
@@ -334,59 +280,7 @@ function loadTable(books) {
   });
 }
 
-function transformToLocalBook(booksServer) {
-  let books;
-
-  booksServer.forEach(book => {
-    let bookLocal;
-    if (book.universidad_id !== "21002103") {
-      bookLocal = {
-        idBook: {
-          universidad_id: book.universidad_id,
-          universidad_libro_id: book.universidad_libro_id
-        },
-        libroBase64: recLibroCentral(book.universidad_id, book.universidad_libro_id),
-        author: "",
-        name: book.libro_nombre,
-        university: book.nombre_universidad,
-      }
-    }
-
-    books.push(bookLocal);
-
-  });
-
-}
-
-async function recLibroCentral(idUniversidad,idLibro) {
-  let url = URL_SERVER + "buscar-libro";
-
-  let opciones = {
-    method: POST,
-    headers: {
-      "Authorization": token.substring(1, token.length - 1),
-      "Content-Type": "application/json"
-    }
-  };
-
-  let respuesta = await fetch(url, opciones);
-  let libro = await respuesta.json();
-
-  /* Ejemplo de respuesta del servidor central
-  respuesta = {
-    "libro_nombre": "string",
-    "libro_base64": {
-        "url_llamada":"url_llamada",
-        "message":"libro_base64"
-    },
-    "tema": "string"
-  } */
-  
-  return libro.libro_base64.message;
-
-}
-
-//FUNCIONES SIN USAR POR EL MOMENTO(PENDIENTES DE PROBAR)
+//#region FUNCIONES SIN USAR POR EL MOMENTO(PENDIENTES DE PROBAR)
 function refrescarLista() {
   let filtro = document.getElementById("txtSearch").value;
 
@@ -415,10 +309,10 @@ function refrescarLista() {
 }
 
 function seeBook2(idBook) {
-  const binaryData = atob(booksGlobal[idBook].file);
+  let binaryData = atob(booksGlobal[idBook].file);
 
   // Crea un Blob a partir de los datos binarios
-  const blob = new Blob(
+  let blob = new Blob(
     [new Uint8Array(binaryData.length).map((_, i) => binaryData.charCodeAt(i))],
     {
       type: "application/pdf",
@@ -426,9 +320,100 @@ function seeBook2(idBook) {
   );
 
   // Crea una URL del Blob
-  const blobUrl = URL.createObjectURL(blob);
+  let blobUrl = URL.createObjectURL(blob);
 
   // Abre una nueva ventana o pestaña y muestra el PDF
   window.open(blobUrl, "_blank");
 }
 
+//#endregion
+
+//#region FUNCIONES PARA CONECTAR SERVIDOR CENTRAL
+async function transformToLocalBooks(booksServer) {
+  let books;
+
+  booksServer.forEach(book => {
+    let bookLocal;
+    if (book.universidad_id !== "21002103") {
+      bookLocal = {
+        idBook: {
+          universidad_id: book.universidad_id,
+          universidad_libro_id: book.universidad_libro_id
+        },
+        libroBase64: "",
+        author: "",
+        name: book.libro_nombre,
+        university: book.nombre_universidad,
+      }
+
+      books.push(bookLocal);
+    }
+
+  });
+
+  return books;
+
+}
+
+async function getServerData() {
+
+  let url = URL_SERVER + "buscar-libro";
+
+  let options = {
+    method: POST,
+    headers: {
+      "Authorization": token,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(filtro)
+  };
+
+  let filtro = {
+    filtro: ""
+  }
+
+  try {
+
+    // Esperar a que se resuelva la petición fetch
+    let response = await fetch(url, options);
+    // Esperar a que se resuelva el método json
+    let books = await response.json();
+
+    if (datosWithToken !== null) {
+      books = await transformToLocalBooks(datosWithToken);
+    }
+
+
+    return books;
+  } catch (error) {
+    return error;
+  }
+}
+
+async function recLibroCentral(idUniversidad, idLibro) {
+  let url = URL_SERVER + "buscar-libro";
+
+  let opciones = {
+    method: POST,
+    headers: {
+      "Authorization": token.substring(1, token.length - 1),
+      "Content-Type": "application/json"
+    }
+  };
+
+  let respuesta = await fetch(url, opciones);
+  let libro = await respuesta.json();
+
+  /* Ejemplo de respuesta del servidor central
+  respuesta = {
+    "libro_nombre": "string",
+    "libro_base64": {
+        "url_llamada":"url_llamada",
+        "message":"libro_base64"
+    },
+    "tema": "string"
+  } */
+
+  return libro.libro_base64.message;
+}
+//#endregion

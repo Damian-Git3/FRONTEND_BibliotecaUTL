@@ -15,7 +15,9 @@ const PUT = "PUT";
 const POST = "POST";
 
 export function loadModule() {
+  console.log("USER CONTROLLER FUNCION LOAD MODULE");
     let url = URL_LOCAL + "getAll";
+    
     getData(url).then((users) => {
         usersGlobal = users;
 
@@ -95,17 +97,7 @@ export function loadForm(id) {
     if (rolFrm) rolFrm.value = usersGlobal[id]?.rol;
 }
 
-function createUserRow(user) {
-    const newRow = document.createElement("tr");
-    newRow.setAttribute("id", user.id_user);
-    newRow.textContent = `
-      ${user.name}
-      ${user.email}
-      ${user.rol}
-      ${user?.status ? user.status : ""}
-      `;
-    return newRow;
-}
+
 
 async function getData(url) {
 
@@ -179,7 +171,7 @@ export async function getToken() {
 
     let response = await fetch(url, opciones);
     let token = await response.text();
-    localStorage.setItem("token", token);
+    return token;
 }
 
 function cleanForm() {
@@ -190,7 +182,15 @@ function cleanForm() {
     rolFrm.value = "";
 }
 
+function createUserRow(user) {
+  const newRow = document.createElement("tr");
 
+  newRow.setAttribute("id", user.id_user);
+
+  newRow.textContent = `${user.name} ${user.email} ${user.rol} ${user?.status ? user.status : ''}`;
+
+  return newRow;
+}
 
 
 
